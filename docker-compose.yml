@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: tp-docker-backend:1.0.0
+    container_name: tp_docker_backend
+    ports:
+      - "3001:3000"
+    networks:
+      - tp-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: tp-docker-frontend:1.0.0
+    container_name: tp_docker_frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - tp-network
+
+networks:
+  tp-network:
+    driver: bridge
