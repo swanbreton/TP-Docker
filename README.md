@@ -103,3 +103,16 @@ Alors la pipeline pousse aussi :
 DOCKERHUB_USERNAME/tp-docker-backend:v1.0.0
 DOCKERHUB_USERNAME/tp-docker-frontend:v1.0.0
 ```
+## Images Docker publiées sur GitHub Container Registry
+
+Backend :
+ghcr.io/swanbreton/tp-docker-backend:1.0.0
+
+Frontend :
+ghcr.io/swanbreton/tp-docker-frontend:1.0.0
+
+Vérification :
+
+```bash
+docker pull ghcr.io/swanbreton/tp-docker-backend:1.0.0
+docker pull ghcr.io/swanbreton/tp-docker-frontend:1.0.0
