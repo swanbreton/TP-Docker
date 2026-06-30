@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  backend:
+    image: swanbreton/tp-docker-backend:latest
+    ports:
+      - "3001:3000"
+    networks:
+      - tp-network
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+
+  frontend:
+    image: swanbreton/tp-docker-frontend:latest
+    ports:
+      - "8081:80"
+    networks:
+      - tp-network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+networks:
+  tp-network:
+    driver: overlay

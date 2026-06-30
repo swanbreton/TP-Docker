@@ -1,0 +1,69 @@
+name: Build and Deploy Docker Swarm
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/tp-docker-backend:latest ./backend
+
+      - name: Build frontend image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/tp-docker-frontend:latest ./frontend
+
+      - name: Push backend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/tp-docker-backend:latest
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/tp-docker-frontend:latest
+
+      - name: Copy docker-stack.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-stack.yml"
+          target: "~/tp-docker-swarm"
+
+      - name: Deploy on Docker Swarm with SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p ~/tp-docker-swarm
+            cd ~/tp-docker-swarm
+
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+
+            if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -q active; then
+              docker swarm init
+            fi
+
+            docker pull $DOCKERHUB_USERNAME/tp-docker-backend:latest
+            docker pull $DOCKERHUB_USERNAME/tp-docker-frontend:latest
+
+            docker stack deploy -c docker-stack.yml tp4
+            docker stack services tp4

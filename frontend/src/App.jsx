@@ -1,22 +1,29 @@
 import { useState } from "react";
 
 export default function App() {
-  const [message, setMessage] = useState("");
+  const [data, setData] = useState(null);
 
   const callBackend = async () => {
     const response = await fetch("/api/message");
-    const data = await response.json();
-    setMessage(data.message);
+    const result = await response.json();
+    setData(result);
   };
 
   return (
     <main>
-      <h1>TP Docker Compose</h1>
-      <p>Frontend React + Backend Express avec Docker Compose</p>
+      <h1>TP Docker Swarm</h1>
+      <p>Frontend React + Backend Express déployés avec Docker Swarm</p>
 
       <button onClick={callBackend}>Appeler le backend</button>
 
-      {message && <p data-testid="backend-message">{message}</p>}
+      {data && (
+        <div data-testid="backend-message">
+          <p>{data.message}</p>
+          <p>
+            Instance backend utilisée : <strong>{data.instance}</strong>
+          </p>
+        </div>
+      )}
     </main>
   );
 }
